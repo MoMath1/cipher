@@ -96,32 +96,55 @@
             }
 
             var mouseDown = false;
-            function mouse(evt) {
+            
+            function handleInteraction(evt) {
                 if(mouseDown == true){
                     var offset = updateOffset();
                     var center_x = (offset.left) + (img.width() / 2);
                     var center_y = (offset.top) + (img.height() / 2);
-                    var mouse_x = evt.pageX;
-                    var mouse_y = evt.pageY;
-                    var radians = Math.atan2(mouse_x - center_x, mouse_y - center_y);
+                    
+                    // Get coordinates based on event type
+                    var pointer_x, pointer_y;
+                    
+                    // Handle both mouse and touch events
+                    if (evt.type === 'touchmove') {
+                        // For touch events, use the first touch point
+                        pointer_x = evt.originalEvent.touches[0].pageX;
+                        pointer_y = evt.originalEvent.touches[0].pageY;
+                    } else {
+                        // For mouse events
+                        pointer_x = evt.pageX;
+                        pointer_y = evt.pageY;
+                    }
+                    
+                    var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
                     var degree = (radians * (180 / Math.PI) * -1) + 90;
                     img.css('transform', 'rotate(' + degree + 'deg)');
                 }
             }
 
-            img.on('mousedown touchstart', function (e) {
+            // Mouse events
+            img.on('mousedown', function(e) {
                 mouseDown = true;
-                $(document).on('mousemove touchmove', mouse);
-                
-                // Prevent default behavior for touch events
-                if (e.type === 'touchstart') {
-                    e.preventDefault();
-                }
+                $(document).on('mousemove', handleInteraction);
+                e.preventDefault(); // Prevent text selection during drag
             });
             
-            $(document).on('mouseup touchend', function () {
+            $(document).on('mouseup', function() {
                 mouseDown = false;
-                $(document).off('mousemove touchmove', mouse);
+                $(document).off('mousemove', handleInteraction);
+            });
+            
+            // Touch events
+            img.on('touchstart', function(e) {
+                mouseDown = true;
+                $(document).on('touchmove', handleInteraction);
+                e.preventDefault(); // Prevent scrolling when interacting with the wheel
+            });
+            
+            $(document).on('touchend touchcancel', function() {
+                mouseDown = false;
+                $(document).off('touchmove', handleInteraction);
             });
             
             // Handle window resize
