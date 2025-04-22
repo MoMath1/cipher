@@ -18,8 +18,9 @@
         }
         .wheel-container {
             position: relative;
-            width: 600px;
-            height: 600px;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1/1;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,8 +28,8 @@
         .inner {
             position: absolute;
             z-index: 1;
-            width: 400px;
-            height: 400px;
+            width: 66.67%; /* 400px/600px = 66.67% */
+            height: 66.67%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -39,8 +40,8 @@
         }
         .pointer {
             position: absolute;
-            width: 600px;
-            height: 600px;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -51,10 +52,17 @@
         }
         .marker {
             position: absolute;
-            width: 10px;
-            height: 20px;
+            width: 1.67%; /* 10px/600px = 1.67% */
+            height: 3.33%; /* 20px/600px = 3.33% */
             background-color: red;
             z-index: 2;
+        }
+        
+        /* Media query for smaller screens */
+        @media only screen and (max-width: 560px) {
+            .wheel-container {
+                max-width: 90vmin;
+            }
         }
     </style>
 </head>
@@ -87,11 +95,16 @@
                 img.css('transform', 'rotate(' + degree + 'deg)');
             }
             
+            // Update offset when window resizes
+            $(window).on('resize', function() {
+                offset = img.offset();
+            });
+            
             // Mouse events - toggle behavior
             img.on('click', function(e) {
-                mouseDown = !mouseDown; // Toggle the mouseDown state
+                mouseDown = !mouseDown;
                 if (mouseDown) {
-                    offset = img.offset(); // Update offset when mouse is pressed
+                    offset = img.offset();
                 }
             });
             
@@ -105,7 +118,7 @@
             img.on('touchstart', function(e) {
                 touchActive = true;
                 offset = img.offset();
-                e.preventDefault(); // Prevent default to avoid scrolling
+                e.preventDefault();
             });
             
             $(document).on('touchmove', function(e) {
