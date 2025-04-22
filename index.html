@@ -76,26 +76,48 @@
             var img = $('.pointer');
             var offset = img.offset();
             var mouseDown = false;
+            var touchActive = false;
             
-            $(document).on('mousemove', function(evt) {
-                if(mouseDown) {
-                    var center_x = (offset.left) + (img.width() / 2);
-                    var center_y = (offset.top) + (img.height() / 2);
-                    var mouse_x = evt.pageX;
-                    var mouse_y = evt.pageY;
-                    var radians = Math.atan2(mouse_y - center_y, mouse_x - center_x);
-                    var degree = (radians * (180 / Math.PI)) + 90;
-                    img.css('transform', 'rotate(' + degree + 'deg)');
+            // Function to calculate rotation
+            function calculateRotation(x, y) {
+                var center_x = (offset.left) + (img.width() / 2);
+                var center_y = (offset.top) + (img.height() / 2);
+                var radians = Math.atan2(y - center_y, x - center_x);
+                var degree = (radians * (180 / Math.PI)) + 90;
+                img.css('transform', 'rotate(' + degree + 'deg)');
+            }
+            
+            // Mouse events - toggle behavior
+            img.on('click', function(e) {
+                mouseDown = !mouseDown; // Toggle the mouseDown state
+                if (mouseDown) {
+                    offset = img.offset(); // Update offset when mouse is pressed
                 }
             });
-
-            img.mousedown(function (e) {
-                mouseDown = true;
-                offset = img.offset(); // Update offset when mouse is pressed
+            
+            $(document).on('mousemove', function(evt) {
+                if(mouseDown && !touchActive) {
+                    calculateRotation(evt.pageX, evt.pageY);
+                }
             });
             
-            $(document).mouseup(function (e) {
-                mouseDown = false;
+            // Touch events - drag behavior
+            img.on('touchstart', function(e) {
+                touchActive = true;
+                offset = img.offset();
+                e.preventDefault(); // Prevent default to avoid scrolling
+            });
+            
+            $(document).on('touchmove', function(e) {
+                if(touchActive) {
+                    var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+                    calculateRotation(touch.pageX, touch.pageY);
+                    e.preventDefault();
+                }
+            });
+            
+            $(document).on('touchend touchcancel', function() {
+                touchActive = false;
             });
         });
     </script>
