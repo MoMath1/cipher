@@ -17,49 +17,58 @@
             overflow-x: hidden;
         }
         
-.container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    aspect-ratio: 1/1;
-    margin: 0 auto;
-    overflow: visible;
-}
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+            overflow: visible;
+        }
+        
+        .pointer {
+            position: absolute;
+            width: 600px; /* Fixed width */
+            height: 600px; /* Fixed height */
+            top: 0;
+            left: 0;
+            border: 0px solid green;
+            transform-origin: center center;
+            will-change: transform;
+            transform-style: preserve-3d; /* Improve 3D rendering */
+            backface-visibility: hidden; /* Prevent flickering */
+        }
+        
+        .pointer img {
+            width: 600px; /* Fixed width */
+            height: 600px; /* Fixed height */
+            object-fit: contain;
+            display: block;
+        }
+        
+        .inner {
+            position: absolute;
+            width: 400px; /* Fixed width */
+            height: 400px; /* Fixed height */
+            top: 100px; /* Fixed positioning */
+            left: 100px; /* Fixed positioning */
+            z-index: -1;
+        }
+        
+        .inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
         
         .marker {
             background: #00ff00;
             height: 2px;
             right: 0;
             position: absolute;
-            top: 5.8%;
+            top: 35px;
             width: 0px;
-        }
-        
-        .pointer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    border: 0px solid green;
-    transform-origin: center center; /* Explicitly set the transform origin */
-    will-change: transform; /* Hint to browser for optimization */
-}
-        
-        .inner {
-            position: absolute;
-            width: 66.7%; /* 400px/600px = 0.667 */
-            height: 66.7%;
-            top: 16.7%; /* (600px-400px)/2/600px = 0.167 */
-            left: 16.7%;
-            z-index: -1;
-        }
-        
-        .pointer img, .inner img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
         }
         
         /* Media queries for different screen sizes */
@@ -67,11 +76,31 @@
             .container {
                 max-width: 90vw;
             }
+            .pointer, .pointer img {
+                width: 90vw;
+                height: 90vw;
+            }
+            .inner {
+                width: 60vw;
+                height: 60vw;
+                top: calc(15vw + 2px);
+                left: calc(15vw + 2px);
+            }
         }
         
         @media (max-width: 480px) {
             .container {
                 max-width: 95vw;
+            }
+            .pointer, .pointer img {
+                width: 95vw;
+                height: 95vw;
+            }
+            .inner {
+                width: 63vw;
+                height: 63vw;
+                top: calc(16vw + 2px);
+                left: calc(16vw + 2px);
             }
         }
     </style>
@@ -90,88 +119,87 @@
 
     <script>
         $(document).ready(function() {
-    var img = $('.pointer');
-    var container = $('.container');
-    var lastDegree = 0; // Store the last rotation degree
+            var img = $('.pointer');
+            var container = $('.container');
+            var lastDegree = 0; // Store the last rotation degree
 
-    function updateOffset() {
-        return img.offset();
-    }
-
-    var mouseDown = false;
-    
-    function handleInteraction(evt) {
-        if(mouseDown == true){
-            // Prevent default behavior to avoid unwanted scrolling or selection
-            evt.preventDefault();
-            
-            if (window.rotationAnimationFrame) {
-                cancelAnimationFrame(window.rotationAnimationFrame);
+            function updateOffset() {
+                return img.offset();
             }
+
+            var mouseDown = false;
             
-            window.rotationAnimationFrame = requestAnimationFrame(function() {
-                var offset = updateOffset();
-                var center_x = (offset.left) + (img.width() / 2);
-                var center_y = (offset.top) + (img.height() / 2);
-                
-                // Get coordinates based on event type
-                var pointer_x, pointer_y;
-                
-                if (evt.type === 'touchmove') {
-                    pointer_x = evt.originalEvent.touches[0].pageX;
-                    pointer_y = evt.originalEvent.touches[0].pageY;
-                } else {
-                    pointer_x = evt.pageX;
-                    pointer_y = evt.pageY;
+            function handleInteraction(evt) {
+                if(mouseDown == true){
+                    // Prevent default behavior to avoid unwanted scrolling or selection
+                    evt.preventDefault();
+                    
+                    if (window.rotationAnimationFrame) {
+                        cancelAnimationFrame(window.rotationAnimationFrame);
+                    }
+                    
+                    window.rotationAnimationFrame = requestAnimationFrame(function() {
+                        var offset = updateOffset();
+                        var center_x = (offset.left) + (img.width() / 2);
+                        var center_y = (offset.top) + (img.height() / 2);
+                        
+                        // Get coordinates based on event type
+                        var pointer_x, pointer_y;
+                        
+                        if (evt.type === 'touchmove') {
+                            pointer_x = evt.originalEvent.touches[0].pageX;
+                            pointer_y = evt.originalEvent.touches[0].pageY;
+                        } else {
+                            pointer_x = evt.pageX;
+                            pointer_y = evt.pageY;
+                        }
+                        
+                        var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
+                        var degree = (radians * (180 / Math.PI) * -1) + 90;
+                        
+                        // Apply rotation without changing dimensions
+                        img.css('transform', 'rotate(' + degree + 'deg)');
+                        lastDegree = degree;
+                    });
                 }
-                
-                var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
-                var degree = (radians * (180 / Math.PI) * -1) + 90;
-                
-                // Apply rotation without changing dimensions
-                img.css('transform', 'rotate(' + degree + 'deg)');
-                lastDegree = degree;
+            }
+
+            // Mouse events
+            img.on('mousedown', function(e) {
+                mouseDown = true;
+                $(document).on('mousemove', handleInteraction);
+                e.preventDefault(); // Prevent text selection during drag
             });
-        }
-    }
-
-    // Mouse events
-    img.on('mousedown', function(e) {
-        mouseDown = true;
-        $(document).on('mousemove', handleInteraction);
-        e.preventDefault(); // Prevent text selection during drag
-    });
-    
-    $(document).on('mouseup', function() {
-        mouseDown = false;
-        $(document).off('mousemove', handleInteraction);
-        if (window.rotationAnimationFrame) {
-            cancelAnimationFrame(window.rotationAnimationFrame);
-        }
-    });
-    
-    // Touch events
-    img.on('touchstart', function(e) {
-        mouseDown = true;
-        $(document).on('touchmove', handleInteraction);
-        e.preventDefault(); // Prevent scrolling when interacting with the wheel
-    });
-    
-    $(document).on('touchend touchcancel', function() {
-        mouseDown = false;
-        $(document).off('touchmove', handleInteraction);
-        if (window.rotationAnimationFrame) {
-            cancelAnimationFrame(window.rotationAnimationFrame);
-        }
-    });
-    
-    // Handle window resize
-    $(window).resize(function() {
-        // Update offset when window is resized
-        updateOffset();
-    });
-});
-
+            
+            $(document).on('mouseup', function() {
+                mouseDown = false;
+                $(document).off('mousemove', handleInteraction);
+                if (window.rotationAnimationFrame) {
+                    cancelAnimationFrame(window.rotationAnimationFrame);
+                }
+            });
+            
+            // Touch events
+            img.on('touchstart', function(e) {
+                mouseDown = true;
+                $(document).on('touchmove', handleInteraction);
+                e.preventDefault(); // Prevent scrolling when interacting with the wheel
+            });
+            
+            $(document).on('touchend touchcancel', function() {
+                mouseDown = false;
+                $(document).off('touchmove', handleInteraction);
+                if (window.rotationAnimationFrame) {
+                    cancelAnimationFrame(window.rotationAnimationFrame);
+                }
+            });
+            
+            // Handle window resize
+            $(window).resize(function() {
+                // Update offset when window is resized
+                updateOffset();
+            });
+        });
     </script>
 </body>
 </html>
