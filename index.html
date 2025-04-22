@@ -3,202 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Crypto Wheel</title>
+    <title>Crypto Wheel</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            flex-direction: column;
         }
-        
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            aspect-ratio: 1/1;
-            margin: 0 auto;
-            overflow: hidden;
-        }
-        
-        .pointer {
-            position: absolute;
-            width: 600px; /* Fixed width */
-            height: 600px; /* Fixed height */
-            top: 0;
-            left: 0;
-            border: 0px solid green;
-            transform-origin: center center;
-            will-change: transform;
-            transform-style: preserve-3d; /* Improve 3D rendering */
-            backface-visibility: hidden; /* Prevent flickering */
-            overflow: hidden;
-        }
-        
-        .pointer img {
-            width: 600px; /* Fixed width */
-            height: 600px; /* Fixed height */
-            object-fit: contain;
-            display: block;
-        }
-        
         .inner {
-            position: absolute;
-            width: 400px; /* Fixed width */
-            height: 400px; /* Fixed height */
-            top: 100px; /* Fixed positioning */
-            left: 100px; /* Fixed positioning */
-            z-index: -1;
+            position: relative;
+            z-index: 1;
         }
-        
-        .inner img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
+        .pointer {
+            position: relative;
+            margin-top: -200px;
         }
-        
         .marker {
-            background: #00ff00;
-            height: 2px;
-            right: 0;
             position: absolute;
-            top: 35px;
-            width: 0px;
-        }
-        
-        /* Media queries for different screen sizes */
-        @media (max-width: 768px) {
-            .container {
-                max-width: 90vw;
-            }
-            .pointer, .pointer img {
-                width: 90vw;
-                height: 90vw;
-            }
-            .inner {
-                width: 60vw;
-                height: 60vw;
-                top: calc(15vw + 2px);
-                left: calc(15vw + 2px);
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                max-width: 95vw;
-            }
-            .pointer, .pointer img {
-                width: 95vw;
-                height: 95vw;
-            }
-            .inner {
-                width: 63vw;
-                height: 63vw;
-                top: calc(16vw + 2px);
-                left: calc(16vw + 2px);
-            }
+            width: 10px;
+            height: 20px;
+            background-color: red;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="inner">
-            <img src="https://momath.org/wp-content/uploads/2020/03/cryptowheel-large-inner-1.png" alt="Inner wheel">
-        </div>
+    <div class="inner">
+        <img src="https://momath.org/wp-content/uploads/2020/03/cryptowheel-large-inner-1.png" style="display: block; margin-left:auto; margin-right:auto; width:400px;">
+    </div>
 
-        <div class="pointer">
-            <img src="https://momath.org/wp-content/uploads/2020/03/cryptowheel-large-outer-2.png" alt="Outer wheel">
-            <div class="marker"></div>
-        </div>
+    <div class="pointer">
+        <img src="https://momath.org/wp-content/uploads/2020/03/cryptowheel-large-outer-2.png" style="display: block; margin-left:auto; margin-right:auto; width:600px;">
+        <div class="marker"></div>
     </div>
 
     <script>
         $(document).ready(function() {
             var img = $('.pointer');
-            var container = $('.container');
-            var lastDegree = 0; // Store the last rotation degree
 
-            function updateOffset() {
-                return img.offset();
-            }
-
+            var offset = img.offset();
             var mouseDown = false;
-            
-            function handleInteraction(evt) {
+            function mouse(evt) {
                 if(mouseDown == true){
-                    // Prevent default behavior to avoid unwanted scrolling or selection
-                    evt.preventDefault();
-                    
-                    if (window.rotationAnimationFrame) {
-                        cancelAnimationFrame(window.rotationAnimationFrame);
-                    }
-                    
-                    window.rotationAnimationFrame = requestAnimationFrame(function() {
-                        var offset = updateOffset();
-                        var center_x = (offset.left) + (img.width() / 2);
-                        var center_y = (offset.top) + (img.height() / 2);
-                        
-                        // Get coordinates based on event type
-                        var pointer_x, pointer_y;
-                        
-                        if (evt.type === 'touchmove') {
-                            pointer_x = evt.originalEvent.touches[0].pageX;
-                            pointer_y = evt.originalEvent.touches[0].pageY;
-                        } else {
-                            pointer_x = evt.pageX;
-                            pointer_y = evt.pageY;
-                        }
-                        
-                        var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
-                        var degree = (radians * (180 / Math.PI) * -1) + 90;
-                        
-                        // Apply rotation without changing dimensions
-                        img.css('transform', 'rotate(' + degree + 'deg)');
-                        lastDegree = degree;
-                    });
+                    var center_x = (offset.left) + (img.width() / 2);
+                    var center_y = (offset.top) + (img.height() / 2);
+                    var mouse_x = evt.pageX;
+                    var mouse_y = evt.pageY;
+                    var radians = Math.atan2(mouse_x - center_x, mouse_y - center_y);
+                    var degree = (radians * (180 / Math.PI) * -1) + 90;
+                    img.css('-moz-transform', 'rotate(' + degree + 'deg)');
+                    img.css('-webkit-transform', 'rotate(' + degree + 'deg)');
+                    img.css('-o-transform', 'rotate(' + degree + 'deg)');
+                    img.css('-ms-transform', 'rotate(' + degree + 'deg)');
+                    img.css('transform', 'rotate(' + degree + 'deg)');
                 }
             }
 
-            // Mouse events
-            img.on('mousedown', function(e) {
+            img.mousedown(function (e) {
                 mouseDown = true;
-                $(document).on('mousemove', handleInteraction);
-                e.preventDefault(); // Prevent text selection during drag
+                offset = img.offset(); // Update offset when mouse is pressed
+                $(document).mousemove(mouse);
             });
             
-            $(document).on('mouseup', function() {
+            $(document).mouseup(function (e) {
                 mouseDown = false;
-                $(document).off('mousemove', handleInteraction);
-                if (window.rotationAnimationFrame) {
-                    cancelAnimationFrame(window.rotationAnimationFrame);
-                }
-            });
-            
-            // Touch events
-            img.on('touchstart', function(e) {
-                mouseDown = true;
-                $(document).on('touchmove', handleInteraction);
-                e.preventDefault(); // Prevent scrolling when interacting with the wheel
-            });
-            
-            $(document).on('touchend touchcancel', function() {
-                mouseDown = false;
-                $(document).off('touchmove', handleInteraction);
-                if (window.rotationAnimationFrame) {
-                    cancelAnimationFrame(window.rotationAnimationFrame);
-                }
-            });
-            
-            // Handle window resize
-            $(window).resize(function() {
-                // Update offset when window is resized
-                updateOffset();
             });
         });
     </script>
