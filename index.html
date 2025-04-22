@@ -109,20 +109,21 @@
                     
                     // Handle both mouse and touch events
                     if (evt.type === 'touchmove') {
-                        // For touch events, use the first touch point
                         pointer_x = evt.originalEvent.touches[0].pageX;
                         pointer_y = evt.originalEvent.touches[0].pageY;
                     } else {
-                        // For mouse events
                         pointer_x = evt.pageX;
                         pointer_y = evt.pageY;
                     }
                     
                     var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
                     var degree = (radians * (180 / Math.PI) * -1) + 90;
+                    
+                    // Apply rotation without changing dimensions
                     img.css('transform', 'rotate(' + degree + 'deg)');
                 }
             }
+
 
             // Mouse events
             img.on('mousedown', function(e) {
