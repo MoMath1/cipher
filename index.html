@@ -20,10 +20,10 @@
         .instructions {
             position: absolute;
             top: 20px;
-            left: 20px;
+            right: 20px;
             font-family: 'Courier New', monospace;
             font-size: 0.8rem;
-            text-align: left;
+            text-align: right;
             background-color: rgba(255, 255, 255, 0.8);
             padding: 8px;
             border-radius: 4px;
@@ -41,8 +41,8 @@
         }
         .inner {
             position: absolute;
-            z-index: 0; /* Changed from 1 to 0 to place it under the outer wheel */
-            width: 66.67%; /* 400px/600px = 66.67% */
+            z-index: 0;
+            width: 66.67%;
             height: 66.67%;
             display: flex;
             justify-content: center;
@@ -59,7 +59,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1; /* Added explicit z-index to ensure it's above the inner wheel */
+            z-index: 1;
         }
         .pointer img {
             width: 100%;
@@ -67,9 +67,9 @@
         }
         .marker {
             position: absolute;
-            width: 1.67%; /* 10px/600px = 1.67% */
-            height: 3.33%; /* 20px/600px = 3.33% */
-            
+            width: 1.67%;
+            height: 3.33%;
+            background-color: red;
             z-index: 2;
         }
         
@@ -89,7 +89,7 @@
 </head>
 <body>
     <div class="instructions">
-        On a phone or iPad drag the green wheel with your finger. On a computer click the green wheel once to start the rotation.
+        
     </div>
 
     <div class="wheel-container">
@@ -125,12 +125,15 @@
                 offset = img.offset();
             });
             
-            // Mouse events - toggle behavior
-            img.on('click', function(e) {
-                mouseDown = !mouseDown;
-                if (mouseDown) {
-                    offset = img.offset();
-                }
+            // Mouse events - press and hold behavior
+            img.on('mousedown', function(e) {
+                mouseDown = true;
+                offset = img.offset();
+                e.preventDefault(); // Prevent text selection
+            });
+            
+            $(document).on('mouseup', function() {
+                mouseDown = false;
             });
             
             $(document).on('mousemove', function(evt) {
