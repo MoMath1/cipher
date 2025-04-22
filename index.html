@@ -17,14 +17,14 @@
             overflow-x: hidden;
         }
         
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            aspect-ratio: 1/1;
-            margin: 0 auto;
-            overflow: visible;
-        }
+.container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1/1;
+    margin: 0 auto;
+    overflow: visible;
+}
         
         .marker {
             background: #00ff00;
@@ -36,14 +36,15 @@
         }
         
         .pointer {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            border: 0px solid green;
-            transform-origin: center center;
-        }
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border: 0px solid green;
+    transform-origin: center center; /* Explicitly set the transform origin */
+    will-change: transform; /* Hint to browser for optimization */
+}
         
         .inner {
             position: absolute;
@@ -89,72 +90,88 @@
 
     <script>
         $(document).ready(function() {
-            var img = $('.pointer');
-            var container = $('.container');
+    var img = $('.pointer');
+    var container = $('.container');
+    var lastDegree = 0; // Store the last rotation degree
 
-            function updateOffset() {
-                return img.offset();
-            }
+    function updateOffset() {
+        return img.offset();
+    }
 
-            var mouseDown = false;
+    var mouseDown = false;
+    
+    function handleInteraction(evt) {
+        if(mouseDown == true){
+            // Prevent default behavior to avoid unwanted scrolling or selection
+            evt.preventDefault();
             
-            function handleInteraction(evt) {
-                if(mouseDown == true){
-                    var offset = updateOffset();
-                    var center_x = (offset.left) + (img.width() / 2);
-                    var center_y = (offset.top) + (img.height() / 2);
-                    
-                    // Get coordinates based on event type
-                    var pointer_x, pointer_y;
-                    
-                    // Handle both mouse and touch events
-                    if (evt.type === 'touchmove') {
-                        pointer_x = evt.originalEvent.touches[0].pageX;
-                        pointer_y = evt.originalEvent.touches[0].pageY;
-                    } else {
-                        pointer_x = evt.pageX;
-                        pointer_y = evt.pageY;
-                    }
-                    
-                    var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
-                    var degree = (radians * (180 / Math.PI) * -1) + 90;
-                    
-                    // Apply rotation without changing dimensions
-                    img.css('transform', 'rotate(' + degree + 'deg)');
+            if (window.rotationAnimationFrame) {
+                cancelAnimationFrame(window.rotationAnimationFrame);
+            }
+            
+            window.rotationAnimationFrame = requestAnimationFrame(function() {
+                var offset = updateOffset();
+                var center_x = (offset.left) + (img.width() / 2);
+                var center_y = (offset.top) + (img.height() / 2);
+                
+                // Get coordinates based on event type
+                var pointer_x, pointer_y;
+                
+                if (evt.type === 'touchmove') {
+                    pointer_x = evt.originalEvent.touches[0].pageX;
+                    pointer_y = evt.originalEvent.touches[0].pageY;
+                } else {
+                    pointer_x = evt.pageX;
+                    pointer_y = evt.pageY;
                 }
-            }
+                
+                var radians = Math.atan2(pointer_x - center_x, pointer_y - center_y);
+                var degree = (radians * (180 / Math.PI) * -1) + 90;
+                
+                // Apply rotation without changing dimensions
+                img.css('transform', 'rotate(' + degree + 'deg)');
+                lastDegree = degree;
+            });
+        }
+    }
 
+    // Mouse events
+    img.on('mousedown', function(e) {
+        mouseDown = true;
+        $(document).on('mousemove', handleInteraction);
+        e.preventDefault(); // Prevent text selection during drag
+    });
+    
+    $(document).on('mouseup', function() {
+        mouseDown = false;
+        $(document).off('mousemove', handleInteraction);
+        if (window.rotationAnimationFrame) {
+            cancelAnimationFrame(window.rotationAnimationFrame);
+        }
+    });
+    
+    // Touch events
+    img.on('touchstart', function(e) {
+        mouseDown = true;
+        $(document).on('touchmove', handleInteraction);
+        e.preventDefault(); // Prevent scrolling when interacting with the wheel
+    });
+    
+    $(document).on('touchend touchcancel', function() {
+        mouseDown = false;
+        $(document).off('touchmove', handleInteraction);
+        if (window.rotationAnimationFrame) {
+            cancelAnimationFrame(window.rotationAnimationFrame);
+        }
+    });
+    
+    // Handle window resize
+    $(window).resize(function() {
+        // Update offset when window is resized
+        updateOffset();
+    });
+});
 
-            // Mouse events
-            img.on('mousedown', function(e) {
-                mouseDown = true;
-                $(document).on('mousemove', handleInteraction);
-                e.preventDefault(); // Prevent text selection during drag
-            });
-            
-            $(document).on('mouseup', function() {
-                mouseDown = false;
-                $(document).off('mousemove', handleInteraction);
-            });
-            
-            // Touch events
-            img.on('touchstart', function(e) {
-                mouseDown = true;
-                $(document).on('touchmove', handleInteraction);
-                e.preventDefault(); // Prevent scrolling when interacting with the wheel
-            });
-            
-            $(document).on('touchend touchcancel', function() {
-                mouseDown = false;
-                $(document).off('touchmove', handleInteraction);
-            });
-            
-            // Handle window resize
-            $(window).resize(function() {
-                // Update offset when window is resized
-                updateOffset();
-            });
-        });
     </script>
 </body>
 </html>
